@@ -1,1 +1,1 @@
-console.log("Hello, Shipn.shop Schema!");
+// ? shipn shared prisma schema
