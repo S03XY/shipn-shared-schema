@@ -1,5 +1,5 @@
 {
-  "name": "shipn.shop.schema",
+  "name": "shipn-shop-schema",
   "version": "1.0.2",
   "main": "index.js",
   "scripts": {
