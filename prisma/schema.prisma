@@ -15,12 +15,13 @@ datasource db {
 }
 
 model User {
-  id                    String   @id @unique //  user defined and can be changed by user based upon there liking
+  id                    String   @id @unique @default(uuid()) //  user defined and can be changed by user based upon there liking
   email                 String   @unique
   password              String
   policyConsent         Boolean
   ageConsent            Boolean
-  blockchainReferenceId String?  @unique
+  displayId             String   @unique
+  blockchainReferenceId String   @unique
   firstName             String?
   lastName              String?
   description           String?
