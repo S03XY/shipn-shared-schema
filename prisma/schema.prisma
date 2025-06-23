@@ -14,12 +14,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-
 model User {
-  id String @id @unique
-  email String @unique
-  password String
-  policyConsent Boolean
-  ageConsent Boolean
+  id                    String   @id @unique //  user defined and can be changed by user based upon there liking
+  email                 String   @unique
+  password              String
+  policyConsent         Boolean
+  ageConsent            Boolean
+  blockchainReferenceId String?  @unique
+  firstName             String?
+  lastName              String?
+  description           String?
+  socialLinks           String[] @default([])
 }
