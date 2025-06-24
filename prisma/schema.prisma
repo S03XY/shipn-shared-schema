@@ -21,7 +21,6 @@ model User {
   policyConsent         Boolean
   ageConsent            Boolean
   displayId             String   @unique
-  blockchainReferenceId String   @unique
   firstName             String?
   lastName              String?
   description           String?
