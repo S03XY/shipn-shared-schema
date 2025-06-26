@@ -45,26 +45,33 @@ model Store {
 }
 
 model Item {
-  id          String   @id @default(uuid())
-  description String?
-  itemCode    String   @unique
-  assets      String[] @default([])
-  amount      BigInt // ? this amount will be including all the charges
-  itemStatus  String // ? item state, list, delist sold or any other enum
-
+  id            String    @id @default(uuid())
+  description   String?
+  itemCode      String    @unique
+  assets        String[]  @default([])
+  amount        BigInt // ? this amount will be including all the charges
+  itemStatus    String // ? item state, list, delist sold or any other enum
+  maxQuantity   Int       @default(1) // ? the max quantity a user can buy while creating order
+  attributes    Json?
   discount      BigInt    @default(0)
   taxPercentage BigInt    @default(0)
   Payment       Payment[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now())
 
+  // ? self relation for other items
+  parentItem    Item?  @relation("ItemToItem", fields: [id], references: [id])
+  attachedItems Item[] @relation("ItemToItem") // All items attached to this item
+
   @@index([itemStatus])
 }
 
 model Payment {
-  id              String @id @default(uuid())
+  id              String  @id @default(uuid())
+  description     String?
+  type            String // ? different type of enums for payment
   transactionHash String
-  store           Store  @relation(fields: [storeId], references: [id]) // ? a store can have multiple p
+  store           Store   @relation(fields: [storeId], references: [id]) // ? a store can have multiple payments
   storeId         String
   amount          BigInt
   status          String // ? payemnt status
@@ -74,8 +81,28 @@ model Payment {
 
   item   Item   @relation(fields: [itemId], references: [id])
   itemId String
+
+  @@index([type])
 }
 
 // ? goal i want to get store activity, inside store you can seperate it via item activity, order activity payment history
 
 // ? goal i want to tack store analytics like total earnings 1 day analytics
+
+model PaymentHistoricalDataAgg {
+  id        String   @id @default(uuid())
+  amount    BigInt
+  startDate DateTime
+  endDate   DateTime
+
+  @@index([startDate, endDate])
+}
+
+model ItemHistoricalDataAgg {
+  id        String   @id @default(uuid())
+  quantity  BigInt
+  startDate DateTime
+  endDate   DateTime
+
+  @@index([startDate, endDate])
+}
