@@ -23,17 +23,50 @@ model User {
 }
 
 model Store {
-  id           String   @id @default(uuid()) // ? unique and immutable can be used to create store pda
-  title        String   @unique
+  id           String    @id @default(uuid()) // ? unique and immutable can be used to create store pda
+  title        String    @unique
   description  String?
-  assets       String[] @default([])
+  assets       String[]  @default([])
   taxWallet    String // ? where the taxed amount will be deposited 
   storeWallet  String // ? where the sale amount will be deposited
-  storeOwner   User     @relation(fields: [userId], references: [id]) // ? 
+  storeOwner   User      @relation(fields: [userId], references: [id]) // ? 
   userId       String
   storePubkey  String // ? solana pda account
   // ? roles admin, list, delist, orders, delivery, customer support,accounts, other 
-  delegates    String[] @default([]) // ? the roles will be pdas with user id and role types so if the pda will exits on chain and these role types will be fixed
-  totalRatings Int      @default(0) // ? each time a person rates its out of 5 1 star has 5 rating  so there are 5 stars in total 
-  ratingCount  Int      @default(0) // ? how many time a store is rated
+  delegates    String[]  @default([]) // ? the roles will be pdas with user id and role types so if the pda will exits on chain and these role types will be fixed
+  totalRatings Int       @default(0) // ? each time a person rates its out of 5 1 star has 5 rating  so there are 5 stars in total 
+  ratingCount  Int       @default(0) // ? how many time a store is rated
+  Payments     Payment[] // ? a store can have multiple payment
 }
+
+model Item {
+  id          String   @id @default(uuid())
+  description String?
+  itemCode    String   @unique
+  assets      String[] @default([])
+  amount      BigInt // ? this amount will be including all the charges
+  itemStatus  String // ? item state, list, delist sold or any other enum
+
+  discount      BigInt    @default(0)
+  taxPercentage BigInt    @default(0)
+  Payment       Payment[]
+
+  @@index([itemStatus])
+}
+
+model Payment {
+  id              String   @id @default(uuid())
+  createdAt       DateTime @default(now())
+  transactionHash String
+  store           Store    @relation(fields: [storeId], references: [id]) // ? a store can have multiple p
+  storeId         String
+  amount          BigInt
+  status          String // ? payemnt status
+
+  item   Item   @relation(fields: [itemId], references: [id])
+  itemId String
+}
+
+// ? goal i want to get store activity, inside store you can seperate it via item activity, order activity payment history
+
+// ? goal i want to tack store analytics like total earnings 1 day analytics
