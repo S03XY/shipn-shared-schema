@@ -45,26 +45,55 @@ model Store {
   totalTradedVolume BigInt    @default(0)
 }
 
-model Item {
-  id            String    @id @default(uuid())
-  description   String?
-  itemCode      String    @unique
-  assets        String[]  @default([])
-  amount        BigInt // ? this amount will be including all the charges
-  itemStatus    String // ? item state, list, delist sold or any other enum
-  maxQuantity   Int       @default(1) // ? the max quantity a user can buy while creating order
-  attributes    Json?
-  discount      BigInt    @default(0)
-  taxPercentage BigInt    @default(0)
-  Payment       Payment[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now())
+model Style {
+  id                String    @id @default(uuid())
+  description       String?
+  styleAvailability String // ? mto, instock or both
+  styleCode         String    @unique
+  assets            String[]  @default([])
+  amount            BigInt // ? this amount will be including all the charges
+  styleStatus       String // ? item state, list, delist,achieve update or any other enum
+  maxOrderCount     Int       @default(1) // ? the max quantity a user can buy while creating order
+  attributes        Json?
+  discount          BigInt    @default(0)
+  taxPercentage     BigInt    @default(0)
+  Payment           Payment[]
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @default(now())
 
   // ? self relation for other items
-  parentItem    Item?  @relation("ItemToItem", fields: [id], references: [id])
-  attachedItems Item[] @relation("ItemToItem") // All items attached to this item
+  parentItemId  String?
+  parentItem    Style?  @relation("ItemToItem", fields: [parentItemId], references: [id])
+  attachedItems Style[] @relation("ItemToItem") // All items attached to this item
 
-  @@index([itemStatus])
+  activities StyleActivity[]
+
+  @@index([styleStatus])
+}
+
+// ? use to track style activity list delist update archieve
+model StyleActivity {
+  id   String @id @default(uuid())
+  type String // ? activity type list delist update archieve
+
+  startDate DateTime
+  endDate   DateTime
+
+  style   Style?  @relation(fields: [styleId], references: [id])
+  styleId String?
+
+  @@index([type])
+  @@index([startDate, endDate])
+}
+
+// ? manage style stocks
+model Inventory {
+  id String @id @default(uuid())
+}
+
+// ? review made by customer on style will be stored off chain
+model StyleReviews {
+  id String @id @default(uuid())
 }
 
 model Payment {
@@ -80,7 +109,7 @@ model Payment {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 
-  item   Item   @relation(fields: [itemId], references: [id])
+  item   Style  @relation(fields: [itemId], references: [id])
   itemId String
 
   @@index([type])
