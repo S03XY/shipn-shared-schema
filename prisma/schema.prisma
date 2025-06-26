@@ -21,8 +21,9 @@ model User {
   socialLinks   String[] @default([])
   Store         Store[] // ? user can have multiple stores
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @default(now())
+  StyleReview StyleReview[]
 }
 
 model Store {
@@ -46,27 +47,33 @@ model Store {
 }
 
 model Style {
-  id                String    @id @default(uuid())
+  id                String   @id @default(uuid())
   description       String?
   styleAvailability String // ? mto, instock or both
-  styleCode         String    @unique
-  assets            String[]  @default([])
+  styleCode         String   @unique
+  assets            String[] @default([])
   amount            BigInt // ? this amount will be including all the charges
   styleStatus       String // ? item state, list, delist,achieve update or any other enum
-  maxOrderCount     Int       @default(1) // ? the max quantity a user can buy while creating order
-  attributes        Json?
-  discount          BigInt    @default(0)
-  taxPercentage     BigInt    @default(0)
-  Payment           Payment[]
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @default(now())
+  maxOrderCount     Int      @default(1) // ? the max quantity a user can buy while creating order
+
+  totalRatings Int @default(0) // ? each time a person rates its out of 5 1 star has 5 rating  so there are 5 stars in total 
+  ratingCount  Int @default(0) // ? how many time a store is rated
+
+  attributes    Json?
+  discount      BigInt    @default(0)
+  taxPercentage BigInt    @default(0)
+  Payment       Payment[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now())
 
   // ? self relation for other items
   parentItemId  String?
   parentItem    Style?  @relation("ItemToItem", fields: [parentItemId], references: [id])
   attachedItems Style[] @relation("ItemToItem") // All items attached to this item
 
-  activities StyleActivity[]
+  activities  StyleActivity[]
+  Inventory   Inventory? // ? 1 to 1 relation ship
+  StyleReview StyleReview[]
 
   @@index([styleStatus])
 }
@@ -88,12 +95,39 @@ model StyleActivity {
 
 // ? manage style stocks
 model Inventory {
-  id String @id @default(uuid())
+  id            String @id @default(uuid())
+  freeUnits     Int    @default(0)
+  reservedUnits Int    @default(0)
+
+  style   Style  @relation(fields: [styleId], references: [id])
+  styleId String @unique
 }
 
 // ? review made by customer on style will be stored off chain
-model StyleReviews {
-  id String @id @default(uuid())
+model StyleReview {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+
+  totalRatings Int @default(0) // ? each time a person rates its out of 5 1 star has 5 rating  so there are 5 stars in total 
+
+  // Relations
+  style   Style  @relation(fields: [styleId], references: [id])
+  styleId String
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  contentSignedHash String // ? a user must be have linked wallet and must sign it user id and content
+
+  // Self-relation for replies
+  parentId     String?
+  parentReview StyleReview?  @relation("ReviewReplies", fields: [parentId], references: [id])
+  replies      StyleReview[] @relation("ReviewReplies")
+
+  @@index([styleId])
+  @@index([parentId])
 }
 
 model Payment {
