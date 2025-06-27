@@ -25,6 +25,19 @@ model User {
   updatedAt   DateTime      @default(now())
   StyleReview StyleReview[]
   HashVersion HashVersion[]
+  Address     Address[]
+}
+
+model Address {
+  id          String  @id @default(uuid())
+  addressLine String
+  city        String
+  state       String
+  country     String
+  postalCode  String
+  user        User    @relation(fields: [userId], references: [id])
+  userId      String
+  isDefault   Boolean @default(false)
 }
 
 model Store {
@@ -48,51 +61,44 @@ model Store {
 }
 
 model Style {
-  id                String   @id @default(uuid())
+  id                String         @id @default(uuid())
   title             String
   description       String?
   styleAvailability String // ? mto, instock or both
-  styleCode         String   @unique // ? must not be updated
-  assets            String[] @default([])
-  amount            BigInt // ? this amount will be including all the charges
+  styleCode         String         @unique // ? must not be updated
+  assets            String[]       @default([])
+  amount            BigInt // ? this amount will be including all the charges in price breakup
   styleStatus       String // ? item state, list, delist,achieve update or any other enum
-  maxOrderCount     Int      @default(1) // ? the max quantity a user can buy while creating order
-
-  totalRatings Int @default(0) // ? each time a person rates its out of 5 1 star has 5 rating  so there are 5 stars in total 
-  ratingCount  Int @default(0) // ? how many time a store is rated
-
-  attributes Json?
-
-  taxPercentage          Int       @default(0) // ? tax percentage that will accumulate as tax
-  platformFeesPercentage Int // ? platform fee percentage
-  Payment                Payment[]
-  createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @default(now())
-
+  maxOrderCount     Int            @default(1) // ? the max quantity a user can buy while creating order
+  totalRatings      Int            @default(0) // ? each time a person rates its out of 5 1 star has 5 rating  so there are 5 stars in total 
+  ratingCount       Int            @default(0) // ? how many time a store is rated
+  attributes        Json?
+  taxPercentage     Int            @default(0) // ? tax percentage that will accumulate as tax
+  Payment           Payment[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @default(now())
   // ? self relation for other items
-  parentItemId  String?
-  parentItem    Style?  @relation("ItemToItem", fields: [parentItemId], references: [id])
-  attachedItems Style[] @relation("ItemToItem") // All items attached to this item
-
-  activities   StyleLogs[]
-  Inventory    Inventory? // ? 1 to 1 relation ship
-  StyleReview  StyleReview[]
-  Order        Order[]
-  PriceBreakup PriceBreakup[]
+  parentItemId      String?
+  parentItem        Style?         @relation("ItemToItem", fields: [parentItemId], references: [id])
+  attachedItems     Style[]        @relation("ItemToItem") // All items attached to this item
+  activities        StyleLogs[]
+  Inventory         Inventory? // ? 1 to 1 relation ship
+  StyleReview       StyleReview[]
+  PriceBreakup      PriceBreakup[]
+  OrderItem         OrderItem[]
 
   @@index([styleStatus])
 }
 
 // ? will be store off chain, and is for user convience
 model PriceBreakup {
-  id         String  @id @default(uuid())
+  id         String      @id @default(uuid())
   title      String
   components Json // ? array of key value pairs like discount and its value
   type       String // ? will add the amount or subtract the amount
-  style      Style   @relation(fields: [styleId], references: [id]) // ? a style can have multiple price breakups
+  style      Style       @relation(fields: [styleId], references: [id]) // ? a style can have multiple price breakups
   styleId    String
-  Order      Order?  @relation(fields: [orderId], references: [id])
-  orderId    String?
+  OrderItem  OrderItem[]
 }
 
 // ? use to track style activity list delist update archieve
@@ -142,26 +148,54 @@ model StyleReview {
 }
 
 // ? order flow, when someone create order the amount is deposited in the escrow the buyer gets a unique code that should match during the time of delivery in order for payment to release from escrow and go to seller shop store wallet from where a user can withdraw it amount
-
-// todo need to add billing and shipping address also items and order can have single items or multiple items need to create orderItem schema
+// ? order  can have multiple order items and each order status and order delivery will be tracked based upon how the individual order item is processed
+// ? order delivery date will me max of deliver date of all the order items
+// ? order status will depending upon the order item status initiated, cancelled,  accepted, processing, ready to pack, out for delivery, partial delivered, delivered, returned, refunded, completed
 model Order {
-  id                 String         @id @default(uuid())
-  title              String
-  description        String?
-  styleCode          String         @unique
-  assets             String[]       @default([]) // ? we need to store only single asset for style 
-  quantity           Int
-  amount             BigInt
-  type               String // ? make to order or in stock
-  orderStatus        String // ? pending, accepted, cancelled, processing, ready to pack, out for delivery
-  orderStatusHistory Json // ? list of status and updated at date
-  style              Style          @relation(fields: [styleId], references: [id]) // ? and style can have multiple orders 
-  styleId            String // ? reference to style to that if the click on the style it will be redirected to the style page
-  createdAt          DateTime
-  PriceBreakup       PriceBreakup[] // ? snapshot of price breakup 
+  id                  String      @id @default(uuid())
+  subTotal            BigInt // ? total amount of all the order items
+  taxAmount           BigInt // ? total tax amount of all the order items
+  totalPlatformFees   BigInt // ? total platform fees of all the order items
+  totalAmount         BigInt // ? total order amount of all the order items
+  type                String // ? make to order or in stock
+  orderStatus         String // ? pending, accepted, cancelled, processing, ready to pack, out for delivery
+  orderStatusHistory  Json // ? list of status and updated at date
+  createdAt           DateTime
+  shippingAddressLine String
+  shippingCity        String
+  shippingState       String
+  shippingCountry     String
+  shippingPostalCode  String
+  billingAddressLine  String
+  billingCity         String
+  billingState        String
+  billingCountry      String
+  billingPostalCode   String
+  OrderItem           OrderItem[]
 
   @@index([orderStatus])
   @@index([createdAt])
+  @@index([shippingCity])
+  @@index([shippingCountry])
+  @@index([shippingPostalCode])
+  @@index([billingCity])
+  @@index([billingCountry])
+  @@index([billingPostalCode])
+}
+
+model OrderItem {
+  id             String       @id @default(uuid())
+  title          String
+  description    String?
+  asset          String
+  quantity       Int
+  amount         BigInt // ? this amount will be including all the charges in price breakup
+  style          Style        @relation(fields: [styleId], references: [id]) // ? and style can have multiple orders 
+  styleId        String // ? reference to style to that if the click on the style it will be redirected to the style page
+  priceBreakup   PriceBreakup @relation(fields: [priceBreakupId], references: [id])
+  priceBreakupId String
+  order          Order        @relation(fields: [orderId], references: [id]) // ? an order can have multiple order items
+  orderId        String
 }
 
 model Payment {
