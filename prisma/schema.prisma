@@ -9,23 +9,24 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(uuid()) // ?  unique id that can be tied to blockchain as well
-  email         String   @unique
+  id            String        @id @default(uuid()) // ?  unique id that can be tied to blockchain as well
+  email         String        @unique
   password      String
   policyConsent Boolean
   ageConsent    Boolean
-  displayId     String   @unique
+  displayId     String        @unique
   firstName     String?
   lastName      String?
   description   String?
-  socialLinks   String[] @default([])
+  socialLinks   String[]      @default([])
   Store         Store[] // ? user can have multiple stores
-
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @default(now())
-  StyleReview StyleReview[]
-  HashVersion HashVersion[]
-  Address     Address[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @default(now())
+  StyleReview   StyleReview[]
+  HashVersion   HashVersion[]
+  Address       Address[]
+  Order         Order[]
+  deactivated   Boolean       @default(false) // ? soft delete
 }
 
 model Address {
@@ -58,6 +59,8 @@ model Store {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @default(now())
   totalTradedVolume BigInt    @default(0)
+  isVerified        Boolean   @default(false) // ? if the store is verified or not
+  deactivated       Boolean   @default(false) // ? soft delete
 }
 
 model Style {
@@ -86,31 +89,29 @@ model Style {
   StyleReview       StyleReview[]
   PriceBreakup      PriceBreakup[]
   OrderItem         OrderItem[]
+  deactivated       Boolean        @default(false) // ? soft delete
 
   @@index([styleStatus])
 }
 
 // ? will be store off chain, and is for user convience
 model PriceBreakup {
-  id         String      @id @default(uuid())
-  title      String
-  components Json // ? array of key value pairs like discount and its value
-  type       String // ? will add the amount or subtract the amount
-  style      Style       @relation(fields: [styleId], references: [id]) // ? a style can have multiple price breakups
-  styleId    String
-  OrderItem  OrderItem[]
+  id          String  @id @default(uuid())
+  title       String
+  components  Json? // ? array of key value pairs like discount and its value and amount will be added or subtracted from the total amount
+  style       Style   @relation(fields: [styleId], references: [id]) // ? a style can have multiple price breakups
+  styleId     String
+  deactivated Boolean @default(false) // ? soft delete 
 }
 
 // ? use to track style activity list delist update archieve
 model StyleLogs {
-  id   String @id @default(uuid())
-  type String // ? activity type list delist update archieve
-
+  id        String   @id @default(uuid())
+  type      String // ? activity type list delist update archieve
   startDate DateTime
   endDate   DateTime
-
-  style   Style?  @relation(fields: [styleId], references: [id])
-  styleId String?
+  style     Style?   @relation(fields: [styleId], references: [id])
+  styleId   String?
 
   @@index([type])
   @@index([startDate, endDate])
@@ -153,10 +154,11 @@ model StyleReview {
 // ? order status will depending upon the order item status initiated, cancelled,  accepted, processing, ready to pack, out for delivery, partial delivered, delivered, returned, refunded, completed
 model Order {
   id                  String      @id @default(uuid())
-  subTotal            BigInt // ? total amount of all the order items
+  subTotal            BigInt // ? sub total without tax
   taxAmount           BigInt // ? total tax amount of all the order items
   totalPlatformFees   BigInt // ? total platform fees of all the order items
   totalAmount         BigInt // ? total order amount of all the order items
+  shippingAmount      BigInt // ? shipping cost to deliver the order
   type                String // ? make to order or in stock
   orderStatus         String // ? pending, accepted, cancelled, processing, ready to pack, out for delivery
   orderStatusHistory  Json // ? list of status and updated at date
@@ -172,6 +174,9 @@ model Order {
   billingCountry      String
   billingPostalCode   String
   OrderItem           OrderItem[]
+  Delivery            Delivery[]
+  user                User        @relation(fields: [userId], references: [id]) // ? user who created the order  
+  userId              String
 
   @@index([orderStatus])
   @@index([createdAt])
@@ -184,17 +189,24 @@ model Order {
 }
 
 model OrderItem {
-  id             String       @id @default(uuid())
-  title          String
-  description    String?
-  asset          String
-  quantity       Int
-  amount         BigInt // ? this amount will be including all the charges in price breakup
-  style          Style        @relation(fields: [styleId], references: [id]) // ? and style can have multiple orders 
-  styleId        String // ? reference to style to that if the click on the style it will be redirected to the style page
-  priceBreakup   PriceBreakup @relation(fields: [priceBreakupId], references: [id])
-  priceBreakupId String
-  order          Order        @relation(fields: [orderId], references: [id]) // ? an order can have multiple order items
+  id          String  @id @default(uuid())
+  title       String
+  description String?
+  asset       String
+  quantity    Int
+  amount      BigInt // ? this amount will be including all the charges in price breakup
+  style       Style   @relation(fields: [styleId], references: [id]) // ? and style can have multiple orders 
+  styleId     String // ? reference to style to that if the click on the style it will be redirected to the style page
+  components  Json? //? price breakup components 
+  order       Order   @relation(fields: [orderId], references: [id]) // ? an order can have multiple order items
+  orderId     String
+}
+
+model Delivery {
+  id             String  @id @default(uuid())
+  deliveryStatus String // ? pending, accepted, processing, out for delivery, delivered, returned
+  trackingLink   String? // ? link to track the delivery if there is any
+  order          Order   @relation(fields: [orderId], references: [id]) // ? a delivery is related to an order
   orderId        String
 }
 
