@@ -9,26 +9,27 @@ datasource db {
 }
 
 model User {
-  id            String        @id @default(uuid()) // ?  unique id that can be tied to blockchain as well
-  email         String        @unique
+  id            String   @id @default(uuid()) // ?  unique id that can be tied to blockchain as well
+  email         String   @unique
   password      String
   policyConsent Boolean
   ageConsent    Boolean
-  displayId     String        @unique
+  displayId     String   @unique
   firstName     String?
   lastName      String?
   description   String?
-  socialLinks   String[]      @default([])
-  Store         Store[] // ? user can have multiple stores
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @default(now())
-  StyleReview   StyleReview[]
-  HashVersion   HashVersion[]
-  Address       Address[]
-  Order         Order[]
-  deactivated   Boolean       @default(false) // ? soft delete
-  Payment       Payment[]
-  Wallet        Wallet[]
+  socialLinks   String[] @default([])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now())
+  deactivated   Boolean  @default(false) // ? soft delete
+
+  Store       Store[] // ? user can have multiple stores
+  StyleReview StyleReview[]
+  HashVersion HashVersion[]
+  Address     Address[]
+  Order       Order[]
+  Payment     Payment[]
+  Wallet      Wallet[]
 }
 
 model Wallet {
