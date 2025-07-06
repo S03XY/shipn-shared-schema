@@ -65,7 +65,6 @@ model Store {
   storeWallet              String // ? where the sale amount will be deposited
   storeOwner               User                      @relation(fields: [userId], references: [id]) // ? 
   userId                   String
-  storePubkey              String // ? solana pda account
   // ? roles admin, list, delist, orders, delivery, customer support,accounts, other 
   delegates                String[]                  @default([]) // ? the roles will be pdas with user id and role types so if the pda will exits on chain and these role types will be fixed
   totalRatings             Int                       @default(0) // ? each time a person rates its out of 5 1 star has 5 rating  so there are 5 stars in total 
@@ -73,7 +72,6 @@ model Store {
   Payments                 Payment[] // ? a store can have multiple payment
   createdAt                DateTime                  @default(now())
   updatedAt                DateTime                  @default(now())
-  totalTradedVolume        BigInt                    @default(0)
   isVerified               Boolean                   @default(false) // ? if the store is verified or not
   deactivated              Boolean                   @default(false) // ? soft delete
   AllTimeStoreTradeMetrics AllTimeStoreTradeMetrics?
