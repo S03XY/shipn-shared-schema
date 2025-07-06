@@ -77,7 +77,6 @@ model Store {
   isVerified               Boolean                   @default(false) // ? if the store is verified or not
   deactivated              Boolean                   @default(false) // ? soft delete
   AllTimeStoreTradeMetrics AllTimeStoreTradeMetrics?
-  OneDayStoreTradeMetrics  OneDayStoreTradeMetrics?
 }
 
 model AllTimeStoreTradeMetrics {
@@ -89,19 +88,6 @@ model AllTimeStoreTradeMetrics {
   totalItemSold Int      @default(0) // ? total earnings made in the store
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now())
-
-  @@index([storeId])
-}
-
-model OneDayStoreTradeMetrics {
-  id             String   @id @default(uuid())
-  store          Store    @relation(fields: [storeId], references: [id])
-  storeId        String   @unique
-  oneDayOrders   Int      @default(0) // ? total orders made in the store
-  oneDaySales    BigInt   @default(0) // ? total sales made in the store
-  oneDayItemSold Int      @default(0) // ? total earnings made in the store
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @default(now())
 
   @@index([storeId])
 }
