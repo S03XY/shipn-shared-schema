@@ -57,7 +57,8 @@ model Address {
 
 model Store {
   id                String    @id @default(uuid()) // ? unique and immutable can be used to create store pda
-  title             String    @unique
+  name              String
+  storeDisplayId    String    @unique
   description       String?
   assets            String[]  @default([])
   taxWallet         String // ? where the taxed amount will be deposited 
