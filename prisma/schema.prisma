@@ -73,10 +73,10 @@ model Store {
   createdAt                DateTime                  @default(now())
   updatedAt                DateTime                  @default(now())
   isVerified               Boolean                   @default(false) // ? if the store is verified or not
-  deactivated              Boolean                   @default(false) // ? soft delete
+  isDeactivated            Boolean                   @default(false) // ? soft delete
   AllTimeStoreTradeMetrics AllTimeStoreTradeMetrics?
 
-  @@index([deactivated])
+  @@index([isDeactivated])
 }
 
 model AllTimeStoreTradeMetrics {
@@ -92,6 +92,7 @@ model AllTimeStoreTradeMetrics {
   @@index([storeId])
 }
 
+// ? is drafted => publised => deactivated
 model Style {
   id                String         @id @default(uuid())
   title             String
@@ -99,13 +100,14 @@ model Style {
   styleAvailability String // ? mto, instock or both
   assets            String[]       @default([])
   amount            BigInt // ? this amount will be including all the charges in price breakup
-  isListed          Boolean        @default(true) // ? if style is listed or not
+  isDrafted         Boolean        @default(true) // ? if the style is drafted or not
+  isPublised        Boolean        @default(false) // ? if style is listed or not
   maxOrderCount     Int            @default(1) // ? the maximum number of item that can be ordered at once
   totalRatings      Int            @default(0) // ? every rating has 5 points and total number of points received by the style 
   ratingCount       Int            @default(0) // ? how many time a stye is rated
   productInfo       Json? // ? infomation about style in key value pair 
   additionalInfo    Json? // ? other information a seller wants to add 
-  taxPercentage     Int            @default(0) // ? tax percentage that will accumulate as tax
+  taxPercentage     Int            @default(0) // ? tax percentage that will accumulate as tax, while creatign frontend just add a base price field and which tax will be added amount will be determined
   Payment           Payment[]
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @default(now())
@@ -118,10 +120,11 @@ model Style {
   StyleReview       StyleReview[]
   PriceBreakup      PriceBreakup[]
   OrderItem         OrderItem[]
-  deactivated       Boolean        @default(false) // ? soft delete
+  isDeactivated     Boolean        @default(false) // ? soft delete
 
-  @@index([isListed])
-  @@index([deactivated])
+  @@index([isDrafted])
+  @@index([isPublised])
+  @@index([isDeactivated])
 }
 
 // ? will be store off chain, and is for user convience
