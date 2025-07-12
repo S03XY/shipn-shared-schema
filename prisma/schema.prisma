@@ -31,6 +31,7 @@ model User {
   Payment       Payment[]
   Wallet        Wallet[]
   StoreDelegate StoreDelegate[]
+  UserRatings   UserRatings[]
 }
 
 model Wallet {
@@ -76,8 +77,38 @@ model Store {
   AllTimeStoreTradeMetrics AllTimeStoreTradeMetrics?
   Category                 Category[]
   StoreDelegate            StoreDelegate[]
+  UserRatings              UserRatings[]
 
   @@index([isDeactivated])
+}
+
+model StoreDelegate {
+  id      String @id @default(uuid())
+  store   Store  @relation(fields: [storeId], references: [id])
+  storeId String
+  user    User   @relation(fields: [userId], references: [id])
+  userId  String
+  role    String // ? roles admin, list, delist, orders, delivery, customer support,accounts, other 
+
+  @@unique([storeId, userId, role])
+}
+
+model UserRatings {
+  id          String  @id @default(uuid())
+  rating      Int     @default(0)
+  description String
+  store       Store?  @relation(fields: [storeId], references: [id])
+  storeId     String?
+  style       Style?  @relation(fields: [styleId], references: [id])
+  styleId     String?
+  user        User    @relation(fields: [userId], references: [id])
+  userId      String
+
+  @@unique([userId, storeId])
+  @@unique([userId, styleId])
+  @@index([storeId])
+  @@index([styleId])
+  @@index([userId])
 }
 
 model AllTimeStoreTradeMetrics {
@@ -91,17 +122,6 @@ model AllTimeStoreTradeMetrics {
   updatedAt     DateTime @default(now())
 
   @@index([storeId])
-}
-
-model StoreDelegate {
-  id      String @id @default(uuid())
-  store   Store  @relation(fields: [storeId], references: [id])
-  storeId String
-  user    User   @relation(fields: [userId], references: [id])
-  userId  String
-  role    String // ? roles admin, list, delist, orders, delivery, customer support,accounts, other 
-
-  @@unique([storeId, userId, role])
 }
 
 model Category {
@@ -158,6 +178,7 @@ model Style {
   PriceBreakup      PriceBreakup[]
   OrderItem         OrderItem[]
   isDeactivated     Boolean        @default(false) // ? soft delete
+  UserRatings       UserRatings[]
 
   @@index([isDrafted])
   @@index([isPublised])
