@@ -75,6 +75,8 @@ model Store {
   isVerified               Boolean                   @default(false) // ? if the store is verified or not
   deactivated              Boolean                   @default(false) // ? soft delete
   AllTimeStoreTradeMetrics AllTimeStoreTradeMetrics?
+
+  @@index([deactivated])
 }
 
 model AllTimeStoreTradeMetrics {
@@ -95,15 +97,14 @@ model Style {
   title             String
   description       String?
   styleAvailability String // ? mto, instock or both
-  styleCode         String         @unique // ? must not be updated
   assets            String[]       @default([])
   amount            BigInt // ? this amount will be including all the charges in price breakup
-  styleStatus       String // ? item state, list, delist,achieve update or any other enum
-  maxOrderCount     Int            @default(1) // ? the max quantity a user can buy while creating order
-  totalRatings      Int            @default(0) // ? each time a person rates its out of 5 1 star has 5 rating  so there are 5 stars in total 
-  ratingCount       Int            @default(0) // ? how many time a store is rated
-  attributes        Json?
-  additionalInfo    Json? // ? seller information or product certification 
+  isListed          Boolean        @default(true) // ? if style is listed or not
+  maxOrderCount     Int            @default(1) // ? the maximum number of item that can be ordered at once
+  totalRatings      Int            @default(0) // ? every rating has 5 points and total number of points received by the style 
+  ratingCount       Int            @default(0) // ? how many time a stye is rated
+  productInfo       Json? // ? infomation about style in key value pair 
+  additionalInfo    Json? // ? other information a seller wants to add 
   taxPercentage     Int            @default(0) // ? tax percentage that will accumulate as tax
   Payment           Payment[]
   createdAt         DateTime       @default(now())
@@ -119,7 +120,8 @@ model Style {
   OrderItem         OrderItem[]
   deactivated       Boolean        @default(false) // ? soft delete
 
-  @@index([styleStatus])
+  @@index([isListed])
+  @@index([deactivated])
 }
 
 // ? will be store off chain, and is for user convience
