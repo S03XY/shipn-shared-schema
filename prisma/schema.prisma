@@ -8,6 +8,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ? composite keys index works in order of params defined so you may not need additional indexes 
+
 model User {
   id            String   @id @default(uuid()) // ?  unique id that can be tied to blockchain as well
   email         String   @unique
@@ -20,7 +22,7 @@ model User {
   description   String?
   socialLinks   String[] @default([])
   createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
   deactivated   Boolean  @default(false) // ? soft delete
 
   Store         Store[] // ? user can have multiple stores
@@ -43,6 +45,9 @@ model Wallet {
   userId        String // ? a user can have multiple wallets but wallet address must be unique
   deactivated   Boolean  @default(false) // ? soft delete
   ceratedAt     DateTime @default(now())
+  updateAt      DateTime @default(now()) @updatedAt
+
+  @@index([userId])
 }
 
 model Address {
@@ -55,6 +60,8 @@ model Address {
   user        User    @relation(fields: [userId], references: [id])
   userId      String
   isDefault   Boolean @default(false)
+
+  @@index([userId])
 }
 
 model Store {
@@ -71,7 +78,7 @@ model Store {
   ratingCount              Int                       @default(0) // ? how many time a store is rated
   Payments                 Payment[] // ? a store can have multiple payment
   createdAt                DateTime                  @default(now())
-  updatedAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @default(now()) @updatedAt
   isVerified               Boolean                   @default(false) // ? if the store is verified or not
   isDeactivated            Boolean                   @default(false) // ? soft delete
   AllTimeStoreTradeMetrics AllTimeStoreTradeMetrics?
@@ -79,7 +86,7 @@ model Store {
   StoreDelegate            StoreDelegate[]
   StoreRatings             StoreRatings[]
 
-  @@index([isDeactivated])
+  @@index([userId, isDeactivated])
 }
 
 model StoreDelegate {
@@ -102,7 +109,7 @@ model StoreRatings {
   user        User     @relation(fields: [userId], references: [id])
   userId      String
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@unique([userId, storeId])
   @@index([storeId])
