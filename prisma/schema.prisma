@@ -31,7 +31,7 @@ model User {
   Payment       Payment[]
   Wallet        Wallet[]
   StoreDelegate StoreDelegate[]
-  UserRatings   UserRatings[]
+  StoreRatings  StoreRatings[]
 }
 
 model Wallet {
@@ -77,7 +77,7 @@ model Store {
   AllTimeStoreTradeMetrics AllTimeStoreTradeMetrics?
   Category                 Category[]
   StoreDelegate            StoreDelegate[]
-  UserRatings              UserRatings[]
+  StoreRatings             StoreRatings[]
 
   @@index([isDeactivated])
 }
@@ -93,21 +93,17 @@ model StoreDelegate {
   @@unique([storeId, userId, role])
 }
 
-model UserRatings {
+model StoreRatings {
   id          String  @id @default(uuid())
   rating      Int     @default(0)
-  description String
-  store       Store?  @relation(fields: [storeId], references: [id])
-  storeId     String?
-  style       Style?  @relation(fields: [styleId], references: [id])
-  styleId     String?
+  description String?
+  store       Store   @relation(fields: [storeId], references: [id])
+  storeId     String
   user        User    @relation(fields: [userId], references: [id])
   userId      String
 
   @@unique([userId, storeId])
-  @@unique([userId, styleId])
   @@index([storeId])
-  @@index([styleId])
   @@index([userId])
 }
 
@@ -178,7 +174,6 @@ model Style {
   PriceBreakup      PriceBreakup[]
   OrderItem         OrderItem[]
   isDeactivated     Boolean        @default(false) // ? soft delete
-  UserRatings       UserRatings[]
 
   @@index([isDrafted])
   @@index([isPublised])
