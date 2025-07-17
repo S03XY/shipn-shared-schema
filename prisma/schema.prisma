@@ -140,6 +140,7 @@ model Category {
   storeId       String
   Subcategory   Subcategory[]
 
+  @@unique([title, storeId]) // <-- Add this line
   @@index([isDeactivated])
 }
 
