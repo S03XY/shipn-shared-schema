@@ -153,6 +153,7 @@ model Subcategory {
   category      Category @relation(fields: [categoryId], references: [id])
   categoryId    String
 
+  @@unique([title, categoryId])
   @@index([isDeactivated])
 }
 
