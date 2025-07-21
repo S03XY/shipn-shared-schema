@@ -148,7 +148,7 @@ model Subcategory {
   id            String   @id @default(uuid())
   title         String // ? must be unique within store
   description   String
-  assets        Json // ? key value pair for images and its type
+  assets        Json? // ? key value pair for images and its type
   isDeactivated Boolean
   category      Category @relation(fields: [categoryId], references: [id])
   categoryId    String
