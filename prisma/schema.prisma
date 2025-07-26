@@ -34,6 +34,7 @@ model User {
   Wallet        Wallet[]
   StoreDelegate StoreDelegate[]
   StoreRatings  StoreRatings[]
+  PriceBreakup  PriceBreakup[]
 }
 
 model Wallet {
@@ -159,33 +160,33 @@ model Subcategory {
 
 // ? is drafted => publised => deactivated
 model Style {
-  id                String         @id @default(uuid())
+  id                String        @id @default(uuid())
   title             String
   description       String?
   styleAvailability String // ? mto, instock or both
-  assets            String[]       @default([])
+  assets            String[]      @default([])
   amount            BigInt // ? this amount will be including all the charges in price breakup
-  isDrafted         Boolean        @default(true) // ? if the style is drafted or not
-  isPublised        Boolean        @default(false) // ? if style is listed or not
-  maxOrderCount     Int            @default(1) // ? the maximum number of item that can be ordered at once
-  totalRatings      Int            @default(0) // ? every rating has 5 points and total number of points received by the style 
-  ratingCount       Int            @default(0) // ? how many time a stye is rated
+  isDrafted         Boolean       @default(true) // ? if the style is drafted or not
+  isPublised        Boolean       @default(false) // ? if style is listed or not
+  maxOrderCount     Int           @default(1) // ? the maximum number of item that can be ordered at once
+  totalRatings      Int           @default(0) // ? every rating has 5 points and total number of points received by the style 
+  ratingCount       Int           @default(0) // ? how many time a stye is rated
   productInfo       Json? // ? infomation about style in key value pair 
   additionalInfo    Json? // ? other information a seller wants to add 
-  taxPercentage     Int            @default(0) // ? tax percentage that will accumulate as tax, while creatign frontend just add a base price field and which tax will be added amount will be determined
+  taxPercentage     Int           @default(0) // ? tax percentage that will accumulate as tax, while creatign frontend just add a base price field and which tax will be added amount will be determined
   Payment           Payment[]
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @default(now())
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @default(now())
   // ? self relation for other items
   parentItemId      String?
-  parentItem        Style?         @relation("ItemToItem", fields: [parentItemId], references: [id])
-  attachedItems     Style[]        @relation("ItemToItem") // All items attached to this item
+  parentItem        Style?        @relation("ItemToItem", fields: [parentItemId], references: [id])
+  attachedItems     Style[]       @relation("ItemToItem") // All items attached to this item
   activities        StyleLogs[]
   Inventory         Inventory? // ? 1 to 1 relation ship
   StyleReview       StyleReview[]
-  PriceBreakup      PriceBreakup[]
+  PriceBreakup      PriceBreakup?
   OrderItem         OrderItem[]
-  isDeactivated     Boolean        @default(false) // ? soft delete
+  isDeactivated     Boolean       @default(false) // ? soft delete
 
   @@index([isDrafted])
   @@index([isPublised])
@@ -198,8 +199,12 @@ model PriceBreakup {
   title       String
   components  Json? // ? array of key value pairs like discount and its value and amount will be added or subtracted from the total amount
   style       Style   @relation(fields: [styleId], references: [id]) // ? a style can have multiple price breakups
-  styleId     String
+  styleId     String  @unique
   deactivated Boolean @default(false) // ? soft delete 
+  user        User    @relation(fields: [userId], references: [id])
+  userId      String
+
+  @@unique([title, userId])
 }
 
 // ? use to track style activity list delist update archieve
