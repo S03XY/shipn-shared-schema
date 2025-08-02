@@ -160,38 +160,41 @@ model Subcategory {
 
 // ? is drafted => publised => deactivated
 model Style {
-  id                String        @id @default(uuid())
-  title             String
-  description       String?
-  styleAvailability String // ? mto, instock or both
-  assets            String[]      @default([])
-  amount            BigInt // ? this amount will be including all the charges in price breakup
-  isDrafted         Boolean       @default(true) // ? if the style is drafted or not
-  isPublised        Boolean       @default(false) // ? if style is listed or not
-  maxOrderCount     Int           @default(1) // ? the maximum number of item that can be ordered at once
-  totalRatings      Int           @default(0) // ? every rating has 5 points and total number of points received by the style 
-  ratingCount       Int           @default(0) // ? how many time a stye is rated
-  productInfo       Json? // ? infomation about style in key value pair 
-  additionalInfo    Json? // ? other information a seller wants to add 
-  taxPercentage     Int           @default(0) // ? tax percentage that will accumulate as tax, while creatign frontend just add a base price field and which tax will be added amount will be determined
-  Payment           Payment[]
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @default(now())
-  // ? self relation for other items
-  parentItemId      String?
-  parentItem        Style?        @relation("ItemToItem", fields: [parentItemId], references: [id])
-  attachedItems     Style[]       @relation("ItemToItem") // All items attached to this item
-  activities        StyleLogs[]
-  Inventory         Inventory? // ? 1 to 1 relation ship
-  StyleReview       StyleReview[]
-  PriceBreakup      PriceBreakup? @relation(fields: [priceBreakupId], references: [id])
-  OrderItem         OrderItem[]
-  isDeactivated     Boolean       @default(false) // ? soft delete
-  priceBreakupId    String?
+  id                  String        @id @default(uuid())
+  title               String
+  description         String?
+  styleAvailability   String // ? instock, request on order or both, if out of stock then customers can request on order
+  assets              String[]      @default([])
+  amount              BigInt // ? this amount will be including all the charges in price breakup
+  isDrafted           Boolean       @default(true) // ? if the style is drafted or not
+  isPublised          Boolean       @default(false) // ? if style is listed or not
+  maxOrderCount       Int           @default(1) // ? the maximum number of item that can be ordered at once
+  totalRatings        Int           @default(0) // ? every rating has 5 points and total number of points received by the style 
+  ratingCount         Int           @default(0) // ? how many time a stye is rated
+  productInfo         Json? // ? infomation about style in key value pair 
+  additionalInfo      Json? // ? other information a seller wants to add 
+  taxPercentage       Int           @default(0) // ? tax percentage that will accumulate as tax, while creatign frontend just add a base price field and which tax will be added amount will be determined
+  Payment             Payment[]
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @default(now())
+  parentStyleId       String? // ? variants for adding variants for the styles
+  parentStyle         Style?        @relation("VariantRelation", fields: [parentStyleId], references: [id])
+  variantStyles       Style[]       @relation("VariantRelation")
+  taggedParentStyleId String? // ? tagging other styles
+  taggedParentStyle   Style?        @relation("TaggedRelation", fields: [taggedParentStyleId], references: [id])
+  taggedStyles        Style[]       @relation("TaggedRelation")
+  activities          StyleLogs[]
+  Inventory           Inventory? // ? one to one relation with stock keeping unit
+  StyleReview         StyleReview[]
+  OrderItem           OrderItem[]
+  isDeactivated       Boolean       @default(false) // ? soft delete
+  PriceBreakup        PriceBreakup? @relation(fields: [priceBreakupId], references: [id])
+  priceBreakupId      String?
 
   @@index([isDrafted])
-  @@index([isPublised])
   @@index([isDeactivated])
+  @@index([isPublised, title])
+  @@index([isPublised, amount])
 }
 
 // ? will be store off chain, and is for user convience
