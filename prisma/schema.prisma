@@ -174,7 +174,7 @@ model Style {
   ratingCount       Int      @default(0) // ? how many time a stye is rated
   productInfo       Json? // ? infomation about style in key value pair 
   additionalInfo    Json? // ? other information a seller wants to add 
-  taxPercentage     Int      @default(0) // ? tax percentage that will accumulate as tax, while creatign frontend just add a base price field and which tax will be added amount will be determined
+  taxPercentage     Decimal  @default(0) // ? tax percentage that will accumulate as tax, while creatign frontend just add a base price field and which tax will be added amount will be determined
 
   storeId             String
   store               Store         @relation(fields: [storeId], references: [id])
