@@ -192,8 +192,7 @@ model Style {
   StyleReview         StyleReview[]
   OrderItem           OrderItem[]
   isDeactivated       Boolean       @default(false) // ? soft delete
-  PriceBreakup        PriceBreakup? @relation(fields: [priceBreakupId], references: [id])
-  priceBreakupId      String?
+  PriceBreakup        Json?
 
   @@index([isDrafted])
   @@index([isDeactivated])
@@ -206,7 +205,6 @@ model PriceBreakup {
   id          String  @id @default(uuid())
   title       String
   components  Json?
-  styles      Style[]
   deactivated Boolean @default(false)
   user        User    @relation(fields: [userId], references: [id])
   userId      String
