@@ -141,7 +141,7 @@ model Category {
   store         Store         @relation(fields: [storeId], references: [id])
   storeId       String
   subcategory   Subcategory[]
-  style         Style?
+  style         Style[]
 
   @@unique([title, storeId]) // <-- Add this line
   @@index([isDeactivated])
@@ -155,7 +155,7 @@ model Subcategory {
   isDeactivated Boolean
   category      Category @relation(fields: [categoryId], references: [id])
   categoryId    String
-  style         Style?
+  style         Style[]
 
   @@unique([title, categoryId])
   @@index([isDeactivated])
@@ -196,12 +196,13 @@ model Style {
   isDeactivated       Boolean       @default(false) // ? soft delete
   priceBreakupId      String? // ? price breakup id for the style
   priceBreakup        PriceBreakup? @relation(fields: [priceBreakupId], references: [id])
+  categoryId          String
+  category            Category      @relation(fields: [categoryId], references: [id])
+  subcategoryId       String
+  subcategory         Subcategory   @relation(fields: [subcategoryId], references: [id])
 
-  categoryId    String      @unique
-  category      Category    @relation(fields: [categoryId], references: [id])
-  subcategoryId String      @unique
-  subcategory   Subcategory @relation(fields: [subcategoryId], references: [id])
-
+  @@index([categoryId])
+  @@index([subcategoryId])
   @@index([isDrafted])
   @@index([isDeactivated])
   @@index([isPublised, title])
