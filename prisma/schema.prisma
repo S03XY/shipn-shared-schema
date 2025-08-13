@@ -203,6 +203,10 @@ model Style {
 
   @@index([categoryId])
   @@index([subcategoryId])
+  @@index([storeId])
+  @@index([parentStyleId])
+  @@index([taggedParentStyleId])
+  @@index([priceBreakupId])
   @@index([isDrafted])
   @@index([isDeactivated])
   @@index([isPublised, title])
