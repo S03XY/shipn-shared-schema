@@ -1,3 +1,0 @@
--- AlterTable
-ALTER TABLE "Style" ALTER COLUMN "taxPercentage" SET DEFAULT 0,
-ALTER COLUMN "taxPercentage" SET DATA TYPE DECIMAL(65,30);
