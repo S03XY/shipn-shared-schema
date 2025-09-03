@@ -91,6 +91,7 @@ model Store {
   style                    Style[]
   PriceBreakup             PriceBreakup[]
   StoreReview              StoreReview[]
+  Inventory                Inventory[]
 
   @@index([userId, isDeactivated])
 }
@@ -264,6 +265,8 @@ model Inventory {
   reservedUnits Int      @default(0)
   style         Style    @relation(fields: [styleId], references: [id])
   styleId       String   @unique
+  store         Store    @relation(fields: [storeId], references: [id])
+  storeId       String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now()) @updatedAt
 }
