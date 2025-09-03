@@ -269,6 +269,8 @@ model Inventory {
   storeId       String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now()) @updatedAt
+
+  @@index([storeId])
 }
 
 // ? review made by customer on style will be stored off chain
