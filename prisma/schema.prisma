@@ -92,6 +92,7 @@ model Store {
   PriceBreakup             PriceBreakup[]
   StoreReview              StoreReview[]
   Inventory                Inventory[]
+  Subcategory              Subcategory[]
 
   @@index([userId, isDeactivated])
 }
@@ -156,8 +157,8 @@ model Category {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @default(now()) @updatedAt
 
-  @@unique([title, storeId]) // <-- Add this line
-  @@index([isDeactivated])
+  @@unique([title, storeId])
+  @@index([storeId, isDeactivated])
 }
 
 model Subcategory {
@@ -168,12 +169,16 @@ model Subcategory {
   isDeactivated Boolean
   category      Category @relation(fields: [categoryId], references: [id])
   categoryId    String
+  store         Store    @relation(fields: [storeId], references: [id])
+  storeId       String
   style         Style[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now()) @updatedAt
 
   @@unique([title, categoryId])
-  @@index([isDeactivated])
+  @@index([storeId, categoryId])
+  @@index([storeId, isDeactivated])
+  @@index([categoryId, isDeactivated])
 }
 
 // ? is drafted => publised => deactivated
