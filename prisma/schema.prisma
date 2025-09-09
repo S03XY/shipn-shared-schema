@@ -189,8 +189,7 @@ model Style {
   styleAvailability   String // ? instock, request on order or both, if out of stock then customers can request on order
   assets              String[]      @default([])
   amount              BigInt // ? this amount will be including all the charges in price breakup
-  isDrafted           Boolean       @default(true) // ? if the style is drafted or not
-  isPublised          Boolean       @default(false) // ? if style is listed or not
+  status              String // ? drafted, publised
   maxOrderCount       Int           @default(1) // ? the maximum number of item that can be ordered at once
   totalRatings        Int           @default(0) // ? every rating has 5 points and total number of points received by the style 
   ratingCount         Int           @default(0) // ? how many time a stye is rated
@@ -225,10 +224,9 @@ model Style {
   @@index([parentStyleId])
   @@index([taggedParentStyleId])
   @@index([priceBreakupId])
-  @@index([isDrafted])
+  @@index([status])
   @@index([isDeactivated])
-  @@index([isPublised, title])
-  @@index([isPublised, amount])
+  @@index([status, title])
 }
 
 // ? will be store off chain, and is for user convience
