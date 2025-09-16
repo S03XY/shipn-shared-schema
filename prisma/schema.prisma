@@ -344,7 +344,7 @@ model RecentlyViewedStyle {
 
 model Wishlist {
   id        String   @id @default(uuid())
-  title     String
+  remark    String?
   style     Style    @relation(fields: [styleId], references: [id])
   styleId   String
   user      User     @relation(fields: [userId], references: [id])
@@ -354,7 +354,6 @@ model Wishlist {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  @@unique([userId, title])
   @@unique([storeId, styleId])
   @@index([userId])
   @@index([storeId])
