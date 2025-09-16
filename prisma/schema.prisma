@@ -25,17 +25,19 @@ model User {
   updatedAt     DateTime @default(now()) @updatedAt
   deactivated   Boolean  @default(false) // ? soft delete
 
-  store         Store[] // ? user can have multiple stores
-  styleReview   StyleReview[]
-  hashVersion   HashVersion[]
-  address       Address[]
-  order         Order[]
-  payment       Payment[]
-  wallet        Wallet[]
-  storeDelegate StoreDelegate[]
-  priceBreakup  PriceBreakup[]
-  StoreReview   StoreReview[]
-  ReviewComment ReviewComment[]
+  store               Store[] // ? user can have multiple stores
+  styleReview         StyleReview[]
+  hashVersion         HashVersion[]
+  address             Address[]
+  order               Order[]
+  payment             Payment[]
+  wallet              Wallet[]
+  storeDelegate       StoreDelegate[]
+  priceBreakup        PriceBreakup[]
+  StoreReview         StoreReview[]
+  ReviewComment       ReviewComment[]
+  RecentlyViewedStyle RecentlyViewedStyle[]
+  Wishlist            Wishlist[]
 }
 
 model Wallet {
@@ -93,6 +95,8 @@ model Store {
   StoreReview              StoreReview[]
   Inventory                Inventory[]
   Subcategory              Subcategory[]
+  RecentlyViewedStyle      RecentlyViewedStyle[]
+  Wishlist                 Wishlist[]
 
   @@index([userId, isDeactivated])
 }
@@ -183,40 +187,42 @@ model Subcategory {
 
 // ? is drafted => publised => deactivated
 model Style {
-  id                  String        @id @default(uuid())
+  id                  String                @id @default(uuid())
   title               String
   description         String?
   styleAvailability   String // ? instock, request on order or both, if out of stock then customers can request on order
-  assets              String[]      @default([])
+  assets              String[]              @default([])
   amount              BigInt // ? this amount will be including all the charges in price breakup
   status              String // ? drafted, publised
-  maxOrderCount       Int           @default(1) // ? the maximum number of item that can be ordered at once
-  totalRatings        Int           @default(0) // ? every rating has 5 points and total number of points received by the style 
-  ratingCount         Int           @default(0) // ? how many time a stye is rated
+  maxOrderCount       Int                   @default(1) // ? the maximum number of item that can be ordered at once
+  totalRatings        Int                   @default(0) // ? every rating has 5 points and total number of points received by the style 
+  ratingCount         Int                   @default(0) // ? how many time a stye is rated
   productInfo         Json? // ? infomation about style in key value pair 
   additionalInfo      Json? // ? other information a seller wants to add 
   storeId             String
-  store               Store         @relation(fields: [storeId], references: [id])
+  store               Store                 @relation(fields: [storeId], references: [id])
   payment             Payment[]
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @default(now())
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @default(now())
   parentStyleId       String? // ? variants for adding variants for the styles
-  parentStyle         Style?        @relation("VariantRelation", fields: [parentStyleId], references: [id])
-  variantStyles       Style[]       @relation("VariantRelation")
+  parentStyle         Style?                @relation("VariantRelation", fields: [parentStyleId], references: [id])
+  variantStyles       Style[]               @relation("VariantRelation")
   taggedParentStyleId String? // ? tagging other styles
-  taggedParentStyle   Style?        @relation("TaggedRelation", fields: [taggedParentStyleId], references: [id])
-  taggedStyles        Style[]       @relation("TaggedRelation")
+  taggedParentStyle   Style?                @relation("TaggedRelation", fields: [taggedParentStyleId], references: [id])
+  taggedStyles        Style[]               @relation("TaggedRelation")
   activities          StyleLogs[]
   inventory           Inventory? // ? one to one relation with stock keeping unit
   styleReview         StyleReview[]
   orderItem           OrderItem[]
-  isDeactivated       Boolean       @default(false) // ? soft delete
+  isDeactivated       Boolean               @default(false) // ? soft delete
   priceBreakupId      String? // ? price breakup id for the style
-  priceBreakup        PriceBreakup? @relation(fields: [priceBreakupId], references: [id])
+  priceBreakup        PriceBreakup?         @relation(fields: [priceBreakupId], references: [id])
   categoryId          String
-  category            Category      @relation(fields: [categoryId], references: [id])
+  category            Category              @relation(fields: [categoryId], references: [id])
   subcategoryId       String
-  subcategory         Subcategory   @relation(fields: [subcategoryId], references: [id])
+  subcategory         Subcategory           @relation(fields: [subcategoryId], references: [id])
+  RecentlyViewedStyle RecentlyViewedStyle[]
+  Wishlist            Wishlist[]
 
   @@index([categoryId])
   @@index([subcategoryId])
@@ -316,6 +322,44 @@ model ReviewComment {
   @@index([storeReviewId])
   @@index([styleReviewId])
   @@index([userId])
+}
+
+model RecentlyViewedStyle {
+  id        String   @id @default(uuid())
+  style     Style    @relation(fields: [styleId], references: [id])
+  styleId   String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  store     Store    @relation(fields: [storeId], references: [id])
+  storeId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([storeId, styleId])
+  @@index([userId])
+  @@index([storeId])
+  @@index([styleId])
+  @@index([userId, styleId])
+}
+
+model Wishlist {
+  id        String   @id @default(uuid())
+  title     String
+  style     Style    @relation(fields: [styleId], references: [id])
+  styleId   String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  store     Store    @relation(fields: [storeId], references: [id])
+  storeId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([userId, title])
+  @@unique([storeId, styleId])
+  @@index([userId])
+  @@index([storeId])
+  @@index([styleId])
+  @@index([userId, styleId])
 }
 
 // ? order flow, when someone create order the amount is deposited in the escrow the buyer gets a unique code that should match during the time of delivery in order for payment to release from escrow and go to seller shop store wallet from where a user can withdraw it amount
