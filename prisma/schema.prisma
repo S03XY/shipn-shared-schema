@@ -335,7 +335,7 @@ model RecentlyViewedStyle {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  @@unique([storeId, styleId])
+  @@unique([userId, storeId, styleId])
   @@index([userId])
   @@index([storeId])
   @@index([styleId])
