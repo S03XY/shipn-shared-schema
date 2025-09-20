@@ -38,6 +38,7 @@ model User {
   ReviewComment       ReviewComment[]
   RecentlyViewedStyle RecentlyViewedStyle[]
   Wishlist            Wishlist[]
+  Cart                Cart[]
 }
 
 model Wallet {
@@ -97,6 +98,7 @@ model Store {
   Subcategory              Subcategory[]
   RecentlyViewedStyle      RecentlyViewedStyle[]
   Wishlist                 Wishlist[]
+  Cart                     Cart[]
 
   @@index([userId, isDeactivated])
 }
@@ -223,6 +225,7 @@ model Style {
   subcategory         Subcategory           @relation(fields: [subcategoryId], references: [id])
   RecentlyViewedStyle RecentlyViewedStyle[]
   Wishlist            Wishlist[]
+  Cart                Cart[]
 
   @@index([categoryId])
   @@index([subcategoryId])
@@ -355,6 +358,25 @@ model Wishlist {
   updatedAt DateTime @default(now()) @updatedAt
 
   @@unique([userId, storeId, styleId])
+  @@index([userId])
+  @@index([storeId])
+  @@index([styleId])
+  @@index([userId, styleId])
+}
+
+model Cart {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  store     Store    @relation(fields: [storeId], references: [id])
+  storeId   String
+  style     Style    @relation(fields: [styleId], references: [id])
+  styleId   String
+  quantity  Int      @default(1) // ? how much quantity is required must be less than the max order count of a style
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([userId, storeId, styleId]) // Prevents duplicate cart items for the same user/store/style
   @@index([userId])
   @@index([storeId])
   @@index([styleId])
